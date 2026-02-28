@@ -28,15 +28,11 @@ export default function GamePage() {
   const [lastEliminated, setLastEliminated] = useState<Player | null>(null);
   const [winner, setWinner] = useState("");
 
-  // ================= SOUND SYSTEM =================
-
   const playSound = (src: string) => {
     const audio = new Audio(src);
     audio.volume = 0.8;
     audio.play().catch(() => {});
   };
-
-  // ================= INIT =================
 
   useEffect(() => {
     const storedPlayers = localStorage.getItem("gamePlayers");
@@ -65,11 +61,8 @@ export default function GamePage() {
 
   const activePlayers = players.filter((p) => !p.eliminated);
 
-  // ================= DISCUSSION SHUFFLE =================
-
   const reshuffleDiscussion = (activeList: Player[]) => {
     const shuffled = [...activeList].sort(() => Math.random() - 0.5);
-
     const mrWhiteIndex = shuffled.findIndex((p) => p.role === "mrWhite");
 
     if (mrWhiteIndex !== -1 && mrWhiteIndex < 2) {
@@ -81,11 +74,8 @@ export default function GamePage() {
     setDiscussionOrder(shuffled);
   };
 
-  // ================= REVEAL =================
-
   const nextReveal = () => {
     setFlipped(false);
-
     if (currentRevealIndex < players.length - 1) {
       setCurrentRevealIndex((prev) => prev + 1);
     } else {
@@ -94,11 +84,8 @@ export default function GamePage() {
     }
   };
 
-  // ================= WIN LOGIC =================
-
   const checkWin = (updatedPlayers: Player[]) => {
     const active = updatedPlayers.filter((p) => !p.eliminated);
-
     const civiliansAlive = active.filter((p) => p.role === "civilian").length;
     const undercoverAlive = active.filter(
       (p) => p.role === "undercover",
@@ -118,8 +105,6 @@ export default function GamePage() {
     reshuffleDiscussion(active);
     setPhase("discussion");
   };
-
-  // ================= FINALIZE =================
 
   const finalizeGame = (
     updatedPlayers: Player[],
@@ -144,7 +129,6 @@ export default function GamePage() {
 
     localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
 
-    // 🔊 PLAY WIN SOUND
     if (specialWin) {
       playSound("/sounds/special-win.mp3");
     } else {
@@ -156,15 +140,12 @@ export default function GamePage() {
     setPhase("final");
   };
 
-  // ================= VOTING =================
-
   const handleVote = () => {
     if (!selectedVote) return;
 
     const voted = players.find((p) => p.id === selectedVote);
     if (!voted) return;
 
-    // MR WHITE GUESS
     if (voted.role === "mrWhite") {
       const civilianWord = players.find((p) => p.role === "civilian")?.word;
       const guess = prompt("Mr White, what is the civilian word?");
@@ -188,7 +169,6 @@ export default function GamePage() {
       p.id === voted.id ? { ...p, eliminated: true } : p,
     );
 
-    // 🔊 ELIMINATION SOUNDS
     if (voted.role === "civilian") {
       playSound("/sounds/civilian-out.mp3");
     } else {
@@ -201,7 +181,31 @@ export default function GamePage() {
     setPhase("revealRole");
   };
 
-  // ================= UI SCREENS =================
+  // 🔄 REMATCH (ADDED — no logic changed)
+  const handleRematch = () => {
+    const roleConfig = localStorage.getItem("roleConfig");
+    if (!roleConfig) return;
+
+    const { undercover, mrWhite } = JSON.parse(roleConfig);
+    const names = players.map((p) => p.name);
+    const newBase = generateGame(names, undercover, mrWhite);
+    const leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "{}");
+
+    const refreshed = newBase.map((p) => ({
+      ...p,
+      eliminated: false,
+      points: leaderboard[p.name] || 0,
+    }));
+
+    setPlayers(refreshed);
+    setCurrentRevealIndex(0);
+    setSelectedVote(null);
+    setLastEliminated(null);
+    setWinner("");
+    setFlipped(false);
+    setDiscussionOrder([]);
+    setPhase("reveal");
+  };
 
   if (phase === "loading") {
     return (
@@ -213,7 +217,6 @@ export default function GamePage() {
 
   if (phase === "reveal") {
     const player = players[currentRevealIndex];
-
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
         <h2 className="mb-6 text-xl">{player.name}</h2>
@@ -253,13 +256,11 @@ export default function GamePage() {
     return (
       <div className="min-h-screen bg-black text-white p-6 text-center">
         <h2 className="text-2xl mb-6">Discussion Order</h2>
-
         {discussionOrder.map((p, i) => (
           <div key={p.id} className="mb-3 bg-gray-800 p-3 rounded-xl">
             {i + 1}. {p.name}
           </div>
         ))}
-
         <button
           onClick={() => setPhase("voting")}
           className="mt-6 px-6 py-3 bg-green-600 rounded-xl"
@@ -274,7 +275,6 @@ export default function GamePage() {
     return (
       <div className="min-h-screen bg-black text-white p-6">
         <h2 className="text-2xl mb-6 text-center">Vote the Suspect</h2>
-
         {players.map((p) => (
           <div
             key={p.id}
@@ -290,7 +290,6 @@ export default function GamePage() {
             {p.name}
           </div>
         ))}
-
         <button
           onClick={handleVote}
           className="mt-6 w-full py-3 bg-green-600 rounded"
@@ -307,7 +306,6 @@ export default function GamePage() {
         <h2 className="text-3xl mb-6">
           {lastEliminated.name} was {lastEliminated.role}
         </h2>
-
         <button
           onClick={() => checkWin(players)}
           className="px-6 py-3 bg-blue-600 rounded-xl"
@@ -328,7 +326,6 @@ export default function GamePage() {
         <h2 className="text-3xl text-red-500 mb-6">
           Mr White Failed the Mission
         </h2>
-
         <button
           onClick={() => {
             setPlayers(updated);
@@ -342,7 +339,7 @@ export default function GamePage() {
     );
   }
 
-  // FINAL
+  // FINAL SCREEN WITH REMATCH BUTTON
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6">
       <motion.h1
@@ -371,13 +368,21 @@ export default function GamePage() {
                   {p.role === "mrWhite" ? "Mr. White" : p.role}
                 </div>
               </div>
-
               <div className="text-cyan-400 font-bold text-xl">
                 {p.points} pts
               </div>
             </motion.div>
           ))}
       </div>
+
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={handleRematch}
+        className="mt-12 px-10 py-4 text-lg font-bold rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 shadow-xl hover:shadow-cyan-400/60 transition-all duration-300"
+      >
+        🔄 Rematch
+      </motion.button>
     </div>
   );
 }
