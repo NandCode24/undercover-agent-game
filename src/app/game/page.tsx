@@ -379,7 +379,7 @@ export default function GamePage() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         onClick={handleRematch}
-        className="mt-12 px-10 py-4 text-lg font-bold rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 shadow-xl hover:shadow-cyan-400/60 transition-all duration-300"
+        className="mt-12 px-10 py-4 text-lg font-bold rounded-2xl bg-linear-to-r from-purple-600 to-cyan-500 shadow-xl hover:shadow-cyan-400/60 transition-all duration-300"
       >
         🔄 Rematch
       </motion.button>
