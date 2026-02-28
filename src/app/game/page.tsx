@@ -28,6 +28,14 @@ export default function GamePage() {
   const [lastEliminated, setLastEliminated] = useState<Player | null>(null);
   const [winner, setWinner] = useState("");
 
+  // ================= SOUND SYSTEM =================
+
+  const playSound = (src: string) => {
+    const audio = new Audio(src);
+    audio.volume = 0.8;
+    audio.play().catch(() => {});
+  };
+
   // ================= INIT =================
 
   useEffect(() => {
@@ -86,7 +94,7 @@ export default function GamePage() {
     }
   };
 
-  // ================= CORRECT WIN LOGIC =================
+  // ================= WIN LOGIC =================
 
   const checkWin = (updatedPlayers: Player[]) => {
     const active = updatedPlayers.filter((p) => !p.eliminated);
@@ -97,19 +105,16 @@ export default function GamePage() {
     ).length;
     const mrWhiteAlive = active.filter((p) => p.role === "mrWhite").length;
 
-    // Civilians win ONLY if BOTH special roles are eliminated
     if (undercoverAlive === 0 && mrWhiteAlive === 0) {
       finalizeGame(updatedPlayers, "CIVILIANS WIN", false);
       return;
     }
 
-    // Special roles win ONLY if civilians <= 1
     if (civiliansAlive <= 1 && (undercoverAlive > 0 || mrWhiteAlive > 0)) {
       finalizeGame(updatedPlayers, "SPECIAL ROLES WIN", true);
       return;
     }
 
-    // Otherwise continue game
     reshuffleDiscussion(active);
     setPhase("discussion");
   };
@@ -138,6 +143,14 @@ export default function GamePage() {
     });
 
     localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+
+    // 🔊 PLAY WIN SOUND
+    if (specialWin) {
+      playSound("/sounds/special-win.mp3");
+    } else {
+      playSound("/sounds/civilian-win.mp3");
+    }
+
     setPlayers(updatedPlayers);
     setWinner(message);
     setPhase("final");
@@ -154,7 +167,6 @@ export default function GamePage() {
     // MR WHITE GUESS
     if (voted.role === "mrWhite") {
       const civilianWord = players.find((p) => p.role === "civilian")?.word;
-
       const guess = prompt("Mr White, what is the civilian word?");
 
       if (
@@ -165,6 +177,7 @@ export default function GamePage() {
         finalizeGame(players, "MR WHITE OUTSMARTED EVERYONE!", true);
         return;
       } else {
+        playSound("/sounds/special-caught.mp3");
         setLastEliminated(voted);
         setPhase("mrWhiteFail");
         return;
@@ -174,6 +187,13 @@ export default function GamePage() {
     const updated = players.map((p) =>
       p.id === voted.id ? { ...p, eliminated: true } : p,
     );
+
+    // 🔊 ELIMINATION SOUNDS
+    if (voted.role === "civilian") {
+      playSound("/sounds/civilian-out.mp3");
+    } else {
+      playSound("/sounds/special-caught.mp3");
+    }
 
     setPlayers(updated);
     setLastEliminated(voted);
@@ -195,13 +215,13 @@ export default function GamePage() {
     const player = players[currentRevealIndex];
 
     return (
-      <div className="min-h-screen bg-linear-to-brrom-black via-gray-900 to-black text-white flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
         <h2 className="mb-6 text-xl">{player.name}</h2>
 
         <motion.div
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="w-80 h-48 rounded-2xl bg-linear-to-brrom-gray-800 to-gray-700 shadow-2xl flex items-center justify-center cursor-pointer border border-gray-600"
+          className="w-80 h-48 rounded-2xl bg-gray-800 shadow-2xl flex items-center justify-center cursor-pointer border border-gray-600"
           onClick={() => setFlipped(true)}
         >
           {!flipped ? (
@@ -280,35 +300,7 @@ export default function GamePage() {
       </div>
     );
   }
-const handleRematch = () => {
-  const roleConfig = localStorage.getItem("roleConfig");
-  if (!roleConfig) return;
 
-  const { undercover, mrWhite } = JSON.parse(roleConfig);
-
-  // Keep same player names
-  const names = players.map((p) => p.name);
-
-  // Generate fresh roles
-  const newBase = generateGame(names, undercover, mrWhite);
-
-  const leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "{}");
-
-  const refreshed = newBase.map((p) => ({
-    ...p,
-    eliminated: false,
-    points: leaderboard[p.name] || 0, // keep points
-  }));
-
-  setPlayers(refreshed);
-  setCurrentRevealIndex(0);
-  setSelectedVote(null);
-  setLastEliminated(null);
-  setWinner("");
-  setFlipped(false);
-  setDiscussionOrder([]);
-  setPhase("reveal");
-};
   if (phase === "revealRole" && lastEliminated) {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
@@ -350,20 +342,18 @@ const handleRematch = () => {
     );
   }
 
-  // FINAL SCREEN (CINEMATIC)
+  // FINAL
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6">
-      {/* Winner Title */}
       <motion.h1
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.8 }}
-        className="text-5xl md:text-6xl font-extrabold text-yellow-400 mb-12 tracking-widest text-center"
+        className="text-5xl font-extrabold text-yellow-400 mb-12 text-center"
       >
         {winner}
       </motion.h1>
 
-      {/* Player Results */}
       <div className="w-full max-w-md space-y-4">
         {players
           .sort((a, b) => b.points - a.points)
@@ -373,7 +363,7 @@ const handleRematch = () => {
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.2 }}
-              className="bg-linear-to-r from-gray-800 to-gray-900 border border-gray-700 px-6 py-4 rounded-2xl flex justify-between items-center shadow-lg"
+              className="bg-gray-800 px-6 py-4 rounded-2xl flex justify-between items-center"
             >
               <div>
                 <div className="font-bold text-lg">{p.name}</div>
@@ -388,16 +378,6 @@ const handleRematch = () => {
             </motion.div>
           ))}
       </div>
-
-      {/* Rematch Button */}
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={handleRematch}
-        className="mt-12 px-10 py-4 text-lg font-bold rounded-2xl bg-linear-to-r from-purple-600 to-cyan-500 shadow-xl shadow-purple-500/40 hover:shadow-cyan-400/60 transition-all duration-300"
-      >
-        🔄 Rematch
-      </motion.button>
     </div>
   );
 }
