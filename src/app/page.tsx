@@ -32,7 +32,7 @@ export default function Home() {
           transition={{ duration: 0.8 }}
           className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-wide mb-6 bg-linear-to-r from-purple-400 via-cyan-400 to-purple-500 bg-clip-text text-transparent"
         >
-          UNDERCOVER
+          Undercover Game Online
         </motion.h1>
 
         <motion.p
@@ -94,6 +94,25 @@ export default function Home() {
           This online undercover game is perfect for parties, college friends,
           and group fun. It improves communication skills, bluffing ability, and
           creates hilarious moments.
+        </p>
+
+        <h2 className="text-2xl sm:text-3xl font-bold mt-10 mb-4">
+          Play Undercover Game Online for Free
+        </h2>
+        <p className="leading-relaxed">
+          Play Undercover Game online for free with your friends. No download
+          required. This party game is perfect for college students, family
+          gatherings, birthday parties, and online group fun.
+        </p>
+
+        <h2 className="text-2xl sm:text-3xl font-bold mt-10 mb-4">
+          Best Party Game for Friends
+        </h2>
+        <p className="leading-relaxed">
+          If you are looking for a fun online party game, Undercover Game is one
+          of the best social guessing games to play with friends. It improves
+          communication, observation, and bluffing skills while creating
+          hilarious moments.
         </p>
       </section>
     </div>
