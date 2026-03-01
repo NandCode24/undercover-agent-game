@@ -5,7 +5,7 @@ export default function sitemap() {
       lastModified: new Date(),
     },
     {
-      url: "https://undercover-agent-game.vercel.app",
+      url: "https://undercover-agent-game.vercel.app/create",
       lastModified: new Date(),
     },
   ];
