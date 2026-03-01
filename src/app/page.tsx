@@ -7,11 +7,11 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black text-white flex items-center justify-center px-4 py-16">
+    <div className="min-h-screen relative overflow-hidden bg-black text-white flex flex-col items-center justify-start px-4 py-16">
       {/* Background Glow */}
       <div className="absolute inset-0 bg-linear-to-br from-purple-900 via-black to-cyan-900 opacity-40 blur-3xl" />
 
-      {/* Floating Circles (smaller on mobile) */}
+      {/* Floating Circles */}
       <motion.div
         className="absolute w-40 h-40 md:w-72 md:h-72 bg-purple-600 rounded-full blur-3xl opacity-20"
         animate={{ x: [0, 60, -40, 0], y: [0, -40, 30, 0] }}
@@ -24,9 +24,8 @@ export default function Home() {
         transition={{ duration: 18, repeat: Infinity }}
       />
 
-      {/* Content */}
-      <div className="relative z-10 text-center w-full max-w-md">
-        {/* Title */}
+      {/* Main Content */}
+      <div className="relative z-10 text-center w-full max-w-md mt-20">
         <motion.h1
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -36,7 +35,6 @@ export default function Home() {
           UNDERCOVER
         </motion.h1>
 
-        {/* Tagline */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -47,7 +45,6 @@ export default function Home() {
           Even your best friend might be lying. 😈
         </motion.p>
 
-        {/* Button */}
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -57,7 +54,6 @@ export default function Home() {
           🎮 Start the Chaos
         </motion.button>
 
-        {/* Footer Text */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -67,6 +63,39 @@ export default function Home() {
           Warning: Friendships may not survive this game.
         </motion.p>
       </div>
+
+      {/* SEO CONTENT SECTION */}
+      <section className="relative z-10 max-w-3xl mt-24 text-gray-300 px-4 pb-20 text-left">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-4">
+          What is Undercover Game?
+        </h2>
+        <p className="mb-6 leading-relaxed">
+          Undercover Game is a fun multiplayer word guessing party game. Most
+          players receive the same secret word, but one player gets a different
+          word. The goal is to find the undercover player before they fool
+          everyone.
+        </p>
+
+        <h2 className="text-2xl sm:text-3xl font-bold mb-4">
+          How to Play Undercover Online
+        </h2>
+        <ul className="list-disc ml-6 space-y-2">
+          <li>Each player receives a secret word.</li>
+          <li>One player is undercover.</li>
+          <li>Players describe their word without revealing it.</li>
+          <li>Vote to eliminate the suspicious player.</li>
+          <li>If civilians eliminate all special roles, they win.</li>
+        </ul>
+
+        <h2 className="text-2xl sm:text-3xl font-bold mt-10 mb-4">
+          Why Play This Game?
+        </h2>
+        <p className="leading-relaxed">
+          This online undercover game is perfect for parties, college friends,
+          and group fun. It improves communication skills, bluffing ability, and
+          creates hilarious moments.
+        </p>
+      </section>
     </div>
   );
 }

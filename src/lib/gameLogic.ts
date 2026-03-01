@@ -21,12 +21,8 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 function getRandomWordPair(): [string, string] {
-  const categories = Object.keys(wordPairs);
-  const randomCategory =
-    categories[Math.floor(Math.random() * categories.length)];
-
-  const pairs = wordPairs[randomCategory];
-  return pairs[Math.floor(Math.random() * pairs.length)];
+  const allPairs = Object.values(wordPairs).flat();
+  return allPairs[Math.floor(Math.random() * allPairs.length)];
 }
 
 function getRoleHistory(): RoleHistory {
